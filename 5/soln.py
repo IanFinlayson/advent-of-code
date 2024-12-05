@@ -43,6 +43,36 @@ def part1(rules, updates):
             total += middle(update)
     return total
 
+# this uses a top-sort like algorithm
+def fix(rules, update):
+    new = []
+
+    # go until all pages scheduled
+    while len(update) > 0:
+        # find a page that can be scheduled
+        todo = -1
+        for page in update:
+            possible = True
+            for rule in rules:
+                if page == rule[1] and rule[0] in update:
+                    possible = False
+            if possible:
+                todo = page
+                break
+
+        # schedule this page, and remove from order
+        new.append(todo)
+        update.remove(todo)
+    return new
+
+
+def part2(rules, updates):
+    total = 0
+    for update in updates:
+        if not isValid(rules, update):
+            total += middle(fix(rules, update))
+    return total
+
 rules, updates = getInput()
-print(part1(rules, updates))
+print(part2(rules, updates))
 
