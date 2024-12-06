@@ -40,15 +40,18 @@ def rotate(direction):
             return "v"
 
 # do the walking and put 'X' where they go
-# also keep track of directions for part 2
-def walk(grid, row, col, direction, dirs):
-    obstacles = []
+# return if there was a loop
+def walk(grid, row, col, direction):
+    # we keep track of states we've beein in before to check if we are in a loop
+    history = [[set() for i in range(len(grid[0]))] for j in range(len(grid))]
 
     while True:
-        # for part 2, we first record the direction we are travelling in
-        dirs[row][col].add(direction)
+        # if we have been in this state, it's a loop!
+        if direction in history[row][col]:
+            return True
 
-        # TODO see if an obstacle would help here...
+        # drop our breadcrumb
+        history[row][col].add(direction)
 
         # what cell is ahead of us?
         nrow, ncol = next(row, col, direction)
@@ -57,7 +60,7 @@ def walk(grid, row, col, direction, dirs):
         # if they are off map, wel'll be done
         if n == None:
             grid[row][col] = "X"
-            return obstacles
+            return False
 
         # if they are blocked, turn them
         if n == "#":
@@ -86,29 +89,34 @@ def countX(grid):
     return count
 
 grid = getInput()
-row, col = startpos(grid)
-print("Start:", row+1, col+1)
+startrow, startcol = startpos(grid)
+print("Start:", startrow+1, startcol+1)
 
-# for part 2 we also keep track of the directions we have traversed this cell in
-# this is a set of the characters ^ < > v
-dirs = [[set() for i in range(len(grid[0]))] for j in range(len(grid))]
-obstacles = walk(grid, row, col, "^", dirs)
+walk(grid, startrow, startcol, "^")
 
-for row in dirs:
-    for thing in row:
-        num = 0
-        if "^" in thing: num += 1
-        if "v" in thing: num += 2
-        if "<" in thing: num += 4
-        if ">" in thing: num += 8
-        print(hex(num)[2:], end="")
-    print()
 for row in grid:
     for thing in row:
         print(thing, end="")
     print()
 
-for (a,b) in obstacles:
-    print(a+1, b+1)
-
 print(countX(grid))
+
+# part 2, consider each possible place to put an obstacle, then see if it makes a loop
+def obstacles(grid):
+    obs = []
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if grid[row][col] in ["-", "X"]:
+                grid[row][col] = "#"
+                if walk(grid, startrow, startcol, "^"):
+                    obs.append((row, col))
+                grid[row][col] = "-"
+        print("Row", row, "done")
+    return obs
+
+obs = obstacles(grid)
+
+print(obs)
+print(len(obs))
+
+
