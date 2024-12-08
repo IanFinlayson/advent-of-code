@@ -1,4 +1,5 @@
 import sys
+import math
 
 def getInput():
     if len(sys.argv) < 2:
@@ -22,7 +23,7 @@ def find_stations(grid):
                     stations[grid[row][col]] = ([(row, col)])
     return stations
 
-def antiNodes(n1, n2, rows, cols, anodes):
+def antiNodesPart1(n1, n2, rows, cols, anodes):
     # just realized x and y are mixed up, but whatevs
     xdiff = n1[0] - n2[0]
     ydiff = n1[1] - n2[1]
@@ -35,6 +36,43 @@ def antiNodes(n1, n2, rows, cols, anodes):
     if potential2[0] >= 0 and potential2[0] < rows and potential2[1] >= 0 and potential2[1] < cols:
         anodes[potential2[0]][potential2[1]] = True
 
+def antiNodesPart2(n1, n2, rows, cols, anodes):
+    # just realized x and y are mixed up, but whatevs
+    xdiff = n2[0] - n1[0]
+    ydiff = n2[1] - n1[1]
+
+    # simplify the fraction
+    xdiff //= math.gcd(xdiff, ydiff)
+    ydiff //= math.gcd(xdiff, ydiff)
+
+    # scan in one direction
+    oob = False
+    lastx = n1[0]
+    lasty = n1[1]
+    while not oob:
+        nx = lastx + xdiff
+        ny = lasty + ydiff
+        if nx >= 0 and nx < rows and ny >= 0 and ny < cols:
+            anodes[nx][ny] = True
+            lastx = nx
+            lasty = ny
+        else:
+            oob = True
+
+    # scan in the other
+    oob = False
+    lastx = n2[0]
+    lasty = n2[1]
+    while not oob:
+        nx = lastx - xdiff
+        ny = lasty - ydiff
+        if nx >= 0 and nx < rows and ny >= 0 and ny < cols:
+            anodes[nx][ny] = True
+            lastx = nx
+            lasty = ny
+        else:
+            oob = True
+
 
 # return number of anti-nodes
 def part1(stations, rows, cols, anodes):
@@ -42,7 +80,7 @@ def part1(stations, rows, cols, anodes):
         # we need to pick every pair of locations
         for first in range(len(locs)):
             for second in range(first + 1, len(locs)):
-                antiNodes(locs[first], locs[second], rows, cols, anodes)
+                antiNodesPart2(locs[first], locs[second], rows, cols, anodes)
 
 def countEm(anodes):
     count = 0
