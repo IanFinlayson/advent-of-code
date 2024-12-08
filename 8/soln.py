@@ -1,0 +1,61 @@
+import sys
+
+def getInput():
+    if len(sys.argv) < 2:
+        print("Please pass file name")
+        sys.exit(1)
+    grid = []
+    with open(sys.argv[1]) as file:
+        for line in file:
+            row = [let for let in line]
+            grid.append(row[:-1])
+    return grid
+
+def find_stations(grid):
+    stations = dict()
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if grid[row][col] != ".":
+                if grid[row][col] in stations:
+                    stations[grid[row][col]].append((row, col))
+                else:
+                    stations[grid[row][col]] = ([(row, col)])
+    return stations
+
+def antiNodes(n1, n2, rows, cols, anodes):
+    # just realized x and y are mixed up, but whatevs
+    xdiff = n1[0] - n2[0]
+    ydiff = n1[1] - n2[1]
+
+    potential1 = (n1[0] + xdiff, n1[1] + ydiff)
+    potential2 = (n2[0] - xdiff, n2[1] - ydiff)
+
+    if potential1[0] >= 0 and potential1[0] < rows and potential1[1] >= 0 and potential1[1] < cols:
+        anodes[potential1[0]][potential1[1]] = True
+    if potential2[0] >= 0 and potential2[0] < rows and potential2[1] >= 0 and potential2[1] < cols:
+        anodes[potential2[0]][potential2[1]] = True
+
+
+# return number of anti-nodes
+def part1(stations, rows, cols, anodes):
+    for (station, locs) in stations.items():
+        # we need to pick every pair of locations
+        for first in range(len(locs)):
+            for second in range(first + 1, len(locs)):
+                antiNodes(locs[first], locs[second], rows, cols, anodes)
+
+def countEm(anodes):
+    count = 0
+    for row in anodes:
+        for thing in row:
+            if thing:
+                count += 1
+    return count
+
+grid = getInput()
+stations = find_stations(grid)
+antinodes = [[False for i in range(len(grid[0]))] for j in range(len(grid))]
+part1(stations, len(grid), len(grid[0]), antinodes)
+print(countEm(antinodes))
+
+
