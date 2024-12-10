@@ -23,7 +23,7 @@ def cango(grid, r0, c0, r1, c1):
     return grid[r1][c1] - grid[r0][c0] == 1
 
 # find how many 9's we can reach from the trailhead
-def dfs(grid, row, col, visited):
+def dfsPart1(grid, row, col, visited):
     visited[row][col] = True
     summits = set()
     
@@ -33,16 +33,41 @@ def dfs(grid, row, col, visited):
 
     # up
     if cango(grid, row, col, row - 1, col):
-        summits = summits.union(dfs(grid, row - 1, col, visited))
+        summits = summits.union(dfsPart1(grid, row - 1, col, visited))
     # down
     if cango(grid, row, col, row + 1, col):
-        summits = summits.union(dfs(grid, row + 1, col, visited))
+        summits = summits.union(dfsPart1(grid, row + 1, col, visited))
     # left
     if cango(grid, row, col, row, col - 1):
-        summits = summits.union(dfs(grid, row, col - 1, visited))
+        summits = summits.union(dfsPart1(grid, row, col - 1, visited))
     # right
     if cango(grid, row, col, row, col + 1):
-        summits = summits.union(dfs(grid, row, col + 1, visited))
+        summits = summits.union(dfsPart1(grid, row, col + 1, visited))
+
+    return summits
+
+# find how distinct trails to 9's we can reach from the trailhead
+def dfsPart2(grid, row, col, visited, path):
+    visited[row][col] = True
+    summits = set()
+    path2 = path + str((row, col))
+    
+    # if we hit a summit, return where
+    if grid[row][col] == 9:
+        return {path2}
+
+    # up
+    if cango(grid, row, col, row - 1, col):
+        summits = summits.union(dfsPart2(grid, row - 1, col, visited, path2))
+    # down
+    if cango(grid, row, col, row + 1, col):
+        summits = summits.union(dfsPart2(grid, row + 1, col, visited, path2))
+    # left
+    if cango(grid, row, col, row, col - 1):
+        summits = summits.union(dfsPart2(grid, row, col - 1, visited, path2))
+    # right
+    if cango(grid, row, col, row, col + 1):
+        summits = summits.union(dfsPart2(grid, row, col + 1, visited, path2))
 
     return summits
 
@@ -52,7 +77,7 @@ def findTrailheads(grid):
         for col in range(len(grid[0])):
             if grid[row][col] == 0:
                 visited = [[False for i in range(len(grid[0]))] for j in range(len(grid))]
-                summits = dfs(grid, row, col, visited)
+                summits = dfsPart2(grid, row, col, visited, "")
                 score += len(summits)
     return score
 
