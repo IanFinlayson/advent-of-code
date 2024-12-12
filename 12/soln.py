@@ -97,10 +97,106 @@ def part1(regions, num):
         cost += area[i] * perim[i]
     return cost
 
+def getTopCell(regions, id):
+    for row in range(len(regions)):
+        for col in range(len(regions[0])):
+            if regions[row][col] == id:
+                return row, col
+
+# return dest coords for given spot and direction
+def dest(regions, id, row, col, dir):
+    match dir:
+        case "E":
+            return row, col + 1
+        case "S":
+            return row + 1, col
+        case "W":
+            return row, col - 1
+        case "N":
+            return row - 1, col
+
+# for part 2, we need the number of sides
+# to do this, we find the top/left most cell and walk the perimiter until we get back
+def numSides(regions, id):
+    sides = 0
+    startrow, startcol = getTopCell(regions, id)
+    dir = "E"
+
+    row, col = startrow, startcol
+
+    while (row != startrow or col != startcol) or sides < 4:
+        #print("(", row, ", ", col, ") ", dir, sep="")
+        # take one step, we always want to turn left to hug the perimiter
+        # we figure out our preferred directions based on that
+        match dir:
+            case "E":
+                prefs = ["N", "E", "S", "W"]
+            case "S":
+                prefs = ["E", "S", "W", "N"]
+            case "W":
+                prefs = ["S", "W", "N", "E"]
+            case "N":
+                prefs = ["W", "N", "E", "S"]
+
+        # try to turn left
+        leftrow, leftcol = dest(regions, id, row, col, prefs[0])
+        if r(regions, leftrow, leftcol) == id:
+            #print("Left turn")
+            row, col = leftrow, leftcol
+            dir = prefs[0]
+            sides += 1
+            continue
+
+        # try to go straight
+        straightrow, straigthcol = dest(regions, id, row, col, prefs[1])
+        if r(regions, straightrow, straigthcol) == id:
+            #print("Straight")
+            row, col = straightrow, straigthcol
+            continue
+
+        # turn right in place
+        #print("Right turn")
+        dir = prefs[2]
+        sides += 1
+
+    # turn until we are going east again
+    match dir:
+        case "N":
+            sides += 1
+        case "E":
+            sides += 0
+        case "S":
+            sides += 3
+        case "W":
+            sides += 2
+    return sides
+
+def part2(regions, num):
+    # area is same, but now we get sides instead of perim
+    area = [0 for i in range(num)]
+    sides = [numSides(regions, i) for i in range(num)]
+
+    # TODO we need to adjust this for regions entirely inside of others
+    # those interior ones need their side counts added to the enclosing one ...
+
+    for row in range(len(regions)):
+        for col in range(len(regions[0])):
+            # area is just 1
+            area[regions[row][col]] += 1
+
+    # cost is the sum of the products of likewise elements
+    cost = 0
+    for i in range(num):
+        print("Region", i, "has", sides[i], "sides")
+        cost += area[i] * sides[i]
+    return cost
+
+
 grid = getInput()
 regions, num = findRegions(grid)
 print("There are", num, "regions")
-cost = part1(regions, num)
+cost = part2(regions, num)
 print(cost)
+
 
 
