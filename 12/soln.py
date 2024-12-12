@@ -11,6 +11,7 @@ def getInput():
             grid.append(row[:-1])
     return grid
 
+
 def floodID(crop, grid, regions, row, col, id):
     # if out of bounds
     if row < 0 or row >= len(grid) or col < 0 or col >= len(grid[0]):
@@ -167,11 +168,34 @@ def exteriorSides(regions, id):
             sides += 2
     return sides
 
+# return True if we can get to edge
+def dfsToEdge(regions, id, row, col, visited):
+    #print("     ", row, col)
+    if row < 0 or row >= len(regions) or col < 0 or col >= len(regions[0]):
+        return True
+    if regions[row][col] != id:
+        return False
+    if visited[row][col]:
+        return False
+
+    visited[row][col] = True
+    if dfsToEdge(regions, id, row - 1, col, visited):
+        return True
+    if dfsToEdge(regions, id, row + 1, col, visited):
+        return True
+    if dfsToEdge(regions, id, row, col - 1, visited):
+        return True
+    if dfsToEdge(regions, id, row, col + 1, visited):
+        return True
+    return False
 
 def lockedIn(regions, id):
     row, col = getTopCell(regions, id)
-    #TODO
-    return True
+    #print("Seeing if * region at", row, col, "is locked in ...", end=" ")
+    visited = [[False for i in range(len(regions[0]))] for j in range(len(regions))]
+    locked = not dfsToEdge(regions, id, row, col, visited)
+    #print(locked)
+    return locked
 
 
 # we now need to find the overall number of sides to a region
@@ -183,13 +207,14 @@ def numSides(regions, id, symbol):
     # now we make a new grid with this one having its symbol
     # and all others being a different symbol *
     # that way we treat them all as equal and look for interior regisons
+    #print("Doing it for", id, symbol)
     newgrid = [["*" for i in range(len(regions[0]))] for j in range(len(regions))]
     for row in range(len(regions)):
         for col in range(len(regions[0])):
             if regions[row][col] == id:
-                newgrid[row][col] = symbol[id]
-            print(newgrid[row][col], end="")
-        print()
+                newgrid[row][col] = symbol
+            #print(newgrid[row][col], end="")
+        #print()
 
     newRegions, newNum, newSymbols = findRegions(newgrid)
     interiorSides = 0
@@ -202,7 +227,7 @@ def numSides(regions, id, symbol):
             continue
 
         if lockedIn(newRegions, region):
-            print("Adding in", exteriorSides(newRegions, region))
+            #print("Adding in", exteriorSides(newRegions, region))
             interiorSides += exteriorSides(newRegions, region)
     
     # now we know total number of sides
@@ -225,13 +250,10 @@ def part2(regions, num, symbols):
         cost += area[i] * sides[i]
     return cost
 
-
+sys.setrecursionlimit(20000)
 grid = getInput()
 regions, num, symbols = findRegions(grid)
-print(symbols)
 print("There are", num, "regions")
-#cost = part2(regions, num, symbols)
-#print(cost)
-
-print(numSides(regions, 0, symbols[0]))
+cost = part2(regions, num, symbols)
+print(cost)
 
