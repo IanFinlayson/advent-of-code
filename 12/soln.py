@@ -169,31 +169,38 @@ def exteriorSides(regions, id):
     return sides
 
 # return True if we can get to edge
-def dfsToEdge(regions, id, row, col, visited):
+def dfsToEdge(regions, id, row, col, visited, surrounder):
     #print("     ", row, col)
     if row < 0 or row >= len(regions) or col < 0 or col >= len(regions[0]):
         return True
-    if regions[row][col] != id:
+    if regions[row][col] == surrounder:
+        #print("Bailing because", regions[row][col], "==", surrounder)
         return False
     if visited[row][col]:
         return False
 
     visited[row][col] = True
-    if dfsToEdge(regions, id, row - 1, col, visited):
+    if dfsToEdge(regions, id, row - 1, col, visited, surrounder):
         return True
-    if dfsToEdge(regions, id, row + 1, col, visited):
+    if dfsToEdge(regions, id, row + 1, col, visited, surrounder):
         return True
-    if dfsToEdge(regions, id, row, col - 1, visited):
+    if dfsToEdge(regions, id, row, col - 1, visited, surrounder):
         return True
-    if dfsToEdge(regions, id, row, col + 1, visited):
+    if dfsToEdge(regions, id, row, col + 1, visited, surrounder):
         return True
     return False
 
-def lockedIn(regions, id):
+def lockedIn(regions, id, surrounder):
+    #print("Checking if", id, "reaches edge in:")
+    #for row in regions:
+        #for thing in row:
+            #print(thing, end="")
+        #print()
+
     row, col = getTopCell(regions, id)
     #print("Seeing if * region at", row, col, "is locked in ...", end=" ")
     visited = [[False for i in range(len(regions[0]))] for j in range(len(regions))]
-    locked = not dfsToEdge(regions, id, row, col, visited)
+    locked = not dfsToEdge(regions, id, row, col, visited, surrounder)
     #print(locked)
     return locked
 
@@ -226,7 +233,7 @@ def numSides(regions, id, symbol):
         if newSymbols[region] == symbol:
             continue
 
-        if lockedIn(newRegions, region):
+        if lockedIn(newRegions, region, id):
             #print("Adding in", exteriorSides(newRegions, region))
             interiorSides += exteriorSides(newRegions, region)
     
