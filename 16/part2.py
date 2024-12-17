@@ -77,9 +77,9 @@ def dijkstra(graph, start, end):
     tentative = dict()
     tentative[(start[0], start[1], ">")] = 0
 
-    # we also store the path we use to get to each cell that gave us the tentative cost
+    # we also store the paths we use to get to each cell that gave us the tentative cost
     paths = dict()
-    paths[(start[0], start[1], ">")] = [(start[0], start[1])]
+    paths[(start[0], start[1], ">")] = [[(start[0], start[1])]]
 
     # we make a heap of (row, col, dir) to explore from
     nodes = []
@@ -97,18 +97,19 @@ def dijkstra(graph, start, end):
             if (drow, dcol, ddir) not in tentative or distance < tentative[(drow, dcol, ddir)]:
                 #print("Found path of", cost, "to", drow, dcol, ddir)
                 tentative[(drow, dcol, ddir)] = distance
-                paths[(drow, dcol, ddir)] = paths[(nrow, ncol, ndir)] + [(drow, dcol)]
+                # add this cell to all paths to n{row,coldir}
+                nexts = []
+                for p in paths[(nrow, ncol, ndir)]:
+                    nexts.append(p + [(drow, dcol)])
+                paths[(drow, dcol, ddir)] = nexts
                 heapq.heappush(nodes, (distance, drow, dcol, ddir))
 
             # for part 2, if the path is EQUAL in cost we need to bifurcate
             elif (drow, dcol, ddir) in tentative and distance == tentative[(drow, dcol, ddir)]:
-                # check if the path is different
-                if paths[(drow, dcol, ddir)] != paths[(nrow, ncol, ndir)] + [(drow, dcol)]:
-                    # TODO: add this new path to the LIST of paths for this position
-                    print("found branching path!")
-                    pass
-
-
+                for firstpart in paths[(nrow, ncol, ndir)]:
+                    # if this new (equal cost) way not already in path list, add it
+                    if firstpart + [(drow, dcol)] not in paths[(drow, dcol, ddir)]:
+                        paths[(drow, dcol, ddir)].append(firstpart + [(drow, dcol)])
 
     # find the cost to the end node with the smallest cost
     options = []
@@ -121,12 +122,27 @@ def dijkstra(graph, start, end):
             mini = i
     return options[mini]
 
+# add paths to grid
+def addPaths(grid, paths):
+    for path in paths:
+        for (r, c) in path:
+            grid[r][c] = "O"
+
+def countSeats(grid):
+    seats = 0
+    for row in grid:
+        for thing in row:
+            if thing == "O":
+                seats += 1
+    return seats
+
 
 grid = getInput()
 graph = buildGraph(grid)
-score, path = dijkstra(graph, findSym(grid, "S"), findSym(grid, "E"))
-print(score)
-print(path)
+score, paths = dijkstra(graph, findSym(grid, "S"), findSym(grid, "E"))
+addPaths(grid, paths)
+print(countSeats(grid))
+
 
 
 
