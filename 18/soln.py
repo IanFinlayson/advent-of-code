@@ -17,15 +17,15 @@ def getInput():
             i += 1
     return grid
 
-def p(grid):
+def p(grid, fallen):
     for row in grid:
         for thing in row:
             if thing == None:
-                print("[]", end="")
-            elif thing < 10:
-                print("0" + str(thing), end="")
+                print(".", end="")
+            elif thing <= fallen:
+                print("#", end="")
             else:
-                print(thing, end="")
+                print(".", end="")
         print()
 
 # return spot in grid, or 0 if off map (that simulates byte already off edges so bounds checks easy)
@@ -35,52 +35,56 @@ def get(grid, row, col):
     return grid[row][col]
 
 # do the search thingy
-def dijkstra(grid, size):
-    # the tentative costs are a dict of (row, col, steps) keys and int values
+def dijkstra(grid, size, fallen):
+    # the tentative costs are a dict of (row, cols) keys and int values
     # if there is no path found, there is no entry
     tentative = dict()
-    tentative[(0, 0, 0)] = 0
+    tentative[(0, 0)] = 0
 
-    # we make a heap of (row, col) to explore from
+    # we make a heap of (steps, row, col) to explore from
     nodes = []
     heapq.heappush(nodes, (0, 0, 0))
 
     while len(nodes) > 0:
-        nrow, ncol, nsteps = heapq.heappop(nodes)
-        print("\nConsidering", nrow, ncol, nsteps)
-        if nsteps > size:
-            continue
+        nsteps, nrow, ncol = heapq.heappop(nodes)
+        #print("\nConsidering", nrow, ncol)
 
-        # see where we can go from here TODO change >= to > maybe?
         options = []
-        if get(grid, nrow - 1, ncol) == None or get(grid, nrow - 1, ncol) >= nsteps:
+        if get(grid, nrow - 1, ncol) == None or get(grid, nrow - 1, ncol) > fallen:
             options.append((nrow - 1, ncol))
-        if get(grid, nrow + 1, ncol) == None or get(grid, nrow + 1, ncol) >= nsteps:
+        if get(grid, nrow + 1, ncol) == None or get(grid, nrow + 1, ncol) > fallen:
             options.append((nrow + 1, ncol))
-        if get(grid, nrow, ncol - 1) == None or get(grid, nrow, ncol - 1) >= nsteps:
+        if get(grid, nrow, ncol - 1) == None or get(grid, nrow, ncol - 1) > fallen:
             options.append((nrow, ncol - 1))
-        if get(grid, nrow, ncol + 1) == None or get(grid, nrow, ncol + 1) >= nsteps:
+        if get(grid, nrow, ncol + 1) == None or get(grid, nrow, ncol + 1) > fallen:
             options.append((nrow, ncol + 1))
         
         for drow, dcol in options:
-            distance = tentative[(nrow, ncol, nsteps)] + 1
-            if (drow, dcol, nsteps + 1) not in tentative or distance < tentative[(drow, dcol, nsteps + 1)]:
-                tentative[(drow, dcol, nsteps + 1)] = distance
-                heapq.heappush(nodes, (drow, dcol, nsteps + 1))
+            distance = tentative[(nrow, ncol)] + 1
+            if (drow, dcol) not in tentative or distance < tentative[(drow, dcol)]:
+                tentative[(drow, dcol)] = distance
+                heapq.heappush(nodes, (distance, drow, dcol))
 
     # find thing in dict with lest steps to (size-1, size-1)
-    best = None
-    for (row, col, steps) in tentative:
-        if row == size-1 and col == size-1:
-            if best == None or steps < best:
-                best = steps
-    return steps
+    if (size - 1, size - 1) in tentative:
+        return tentative[(size - 1, size - 1)]
+    else:
+        return None
 
+def findLastByte(grid, size):
+    fallen = 0
+    while True:
+        steps = dijkstra(grid, len(grid), fallen)
+        if steps == None:
+            break
+        fallen += 1
+
+    # find the one with this index
+    for row in range(size):
+        for col in range(size):
+            if grid[row][col] == fallen:
+                return col, row
 
 grid = getInput()
-p(grid)
-steps = dijkstra(grid, len(grid))
-print(steps)
-
-
+print(findLastByte(grid, len(grid)))
 
