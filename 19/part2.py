@@ -82,13 +82,17 @@ class Node:
                 child.insert(newSequence, i + 1)
 
 # TODO memoize this thing
-
+table = dict()
 
 # returns if a given design can be made given available patterns (prefix tree)
 def numPossible(tree, design):
     # base case, if design empty, it works
     if design == "":
         return 1
+
+    # check if memoized
+    if design in table:
+        return table[design]
 
     count = 0
     for length in range(1, len(design) + 1):
@@ -99,6 +103,7 @@ def numPossible(tree, design):
         if tree.contains(part1):
             count += numPossible(tree, part2)
 
+    table[design] = count
     return count
 
 def part2(tree, designs):
