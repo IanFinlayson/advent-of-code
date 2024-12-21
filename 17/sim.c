@@ -2,6 +2,9 @@
 #include <omp.h>
 #include <limits.h>
 
+// my lazy attempt to brute force this thing
+// doe NOT work in a reasonable amount of time
+
 /* this is my input hand dis-assembled */
 int run(unsigned long a) {
     unsigned long b = 0;
@@ -37,6 +40,7 @@ int run(unsigned long a) {
 }
 
 int main() {
+/*
 #pragma omp parallel for num_threads(16)
     for (unsigned long a = 0; a < 0x1000000000000; a++) {
         if (a & 10000000 == 0x10000000000) printf("%lu\n", a);
@@ -44,6 +48,9 @@ int main() {
             printf("FOUND ONE: %lu\n", a);
         }
     }
+    */
+    int result = run(45169406589169741);
+    printf("%d\n", result);
 
     return 0;
 }
