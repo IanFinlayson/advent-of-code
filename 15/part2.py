@@ -65,6 +65,7 @@ def handleHorizontal(grid, row, col, colmod):
         grid[row][col + colmod * step] = grid[row][col + colmod * (step - 1)]
         step -= 1
     grid[row][col + colmod] = "@"
+    grid[row][col] = "."
 
 # check if we CAN do a vertical step or not
 def canStepVerical(grid, row, col, rowmod):
@@ -82,9 +83,24 @@ def canStepVerical(grid, row, col, rowmod):
 
 # actually do the vertical step
 def makeStepVertical(grid, row, col, rowmod):
-    # TODO this is tricky, but all we have left
-    pass
-        
+    # if the one above us is open, just do it
+    if grid[row + rowmod][col] == ".":
+        # move us up
+        grid[row + rowmod][col] = grid[row][col]
+        # replace us with a .
+        grid[row][col] = "."
+    
+    elif grid[row + rowmod][col] == "[":
+        # make space first!
+        makeStepVertical(grid, row + rowmod, col, rowmod)
+        makeStepVertical(grid, row + rowmod, col + 1, rowmod)
+        # then do the move
+        makeStepVertical(grid, row, col, rowmod)
+    elif grid[row + rowmod][col] == "]":
+        makeStepVertical(grid, row + rowmod, col, rowmod)
+        makeStepVertical(grid, row + rowmod, col - 1, rowmod)
+        # then do the move
+        makeStepVertical(grid, row, col, rowmod)
 
 def move(grid, row, col, rowmod, colmod):
     # if the robot walks into a space, fine
@@ -123,19 +139,34 @@ def step(grid, dir):
             rowmod = 1
     move(grid, row, col, rowmod, colmod)
 
+def getScore(grid, row, col):
+    top = row
+    left = col
+    bottom = len(grid) - (row + 1)
+    right = len(grid[0]) - (col + 1)
+    #return 100*min(top, bottom) + min(left, right)
+    return 100*top + left
+
+def getGPS(grid):
+    score = 0
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if grid[row][col] == "[":
+                score += getScore(grid, row, col)
+    return score
 
 # do the whole simulation
 def sim(grid, prog):
     for dir in prog:
+        #print(dir)
         step(grid, dir)
+        #p(grid)
+        #print("\n\n")
 
 
 grid, prog = getInput()
-#sim(grid, prog)
-p(grid)
-
-step(grid, "<")
-step(grid, "^")
-print("\n")
-p(grid)
+#p(grid)
+#print("\n")
+sim(grid, prog)
+print(getGPS(grid))
 
