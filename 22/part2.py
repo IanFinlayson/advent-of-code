@@ -1,3 +1,8 @@
+# this is just a brute force solution
+# I was on vacation when this day dropped and didn't have time to
+# solve this properly (or at least write it in C with parallelization)
+# but I *did* have time to run it in the hotel for 15 hours LOL
+
 import sys
 
 def getInput():
