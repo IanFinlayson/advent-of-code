@@ -53,70 +53,19 @@ def expandCliques(cliques, nodes, edges):
                     expandeds.append(clique.union([node]))
     return expandeds
 
-def getQuads(edges, nodes):
-    # we can compute these, but to not re-do it, we cache it instead
-    
-    # COMPUTE QUADS
-    # tries = getTries(nodes, edges)
-    # quads = expandCliques(tries, nodes, edges)
-    
-    # GET QUADS FROM CACHE
-    with open("quads.txt") as quadfile:
-        line = quadfile.readline()
-        quads = eval(line)
-    return quads
-
-
-
+# expand the sets of three from part 1 until there is one biggest clique
+def biggestClique(cliques, nodes, edges):
+    while len(cliques) > 1:
+        print("Got cliques down to", len(cliques))
+        cliques = expandCliques(cliques, nodes, edges)
+    return cliques
 
 edges, nodes = getInput()
+tries = getTries(nodes, edges)
+biggest = biggestClique(tries, nodes, edges)
 
-quads = getQuads(edges, nodes)
-
-#quines = expandCliques(quads, nodes, edges)
-with open("quines.txt") as infile:
-    line = infile.readline()
-    quines = eval(line)
-
-#sextups = expandCliques(quines, nodes, edges)
-with open("sextups.txt") as infile:
-    line = infile.readline()
-    sextups = eval(line)
-
-#sevs = expandCliques(sextups, nodes, edges)
-with open("sevs.txt") as infile:
-    line = infile.readline()
-    sevs = eval(line)
-
-
-
-#ochos = expandCliques(sevs, nodes, edges)
-#print(ochos)
-with open("ochos.txt") as infile:
-    line = infile.readline()
-    ochos = eval(line)
-
-#niners = expandCliques(ochos, nodes, edges)
-#tens = expandCliques(niners, nodes, edges)
-#onces = expandCliques(tens, nodes, edges)
-with open("onces.txt") as infile:
-    line = infile.readline()
-    onces = eval(line)
-
-#twelves = expandCliques(onces, nodes, edges)
-with open("twelves.txt") as infile:
-    line = infile.readline()
-    twelves = eval(line)
-
-#thirteens = expandCliques(twelves, nodes, edges)
-# GOT IT!
-with open("thirteens.txt") as infile:
-    line = infile.readline()
-    thirteens = eval(line)
-    
-
-answer = list(thirteens[0])
-for thing in sorted(answer):
+answer = sorted(list(biggest))
+for thing in answer[:-1]:
     print(thing,end=",")
-print()
+print(answer[-1])
 

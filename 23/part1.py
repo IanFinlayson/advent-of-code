@@ -36,12 +36,10 @@ def part1(nodes, edges):
                 # check the combo
                 if sortedPair(a, b) in edges and sortedPair(a, c) in edges and sortedPair(b, c) in edges:
                     if a[0] == "t" or b[0] == "t" or c[0] == "t":
-                        #print(a, b, c)
                         count += 1
     return count
 
 edges, nodes = getInput()
-#print(len(nodes))
 print(part1(nodes, edges))
 
 
