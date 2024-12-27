@@ -44,38 +44,40 @@ def getExpression(wire, wires, gates):
     # we should not get here
     print("Wire", wire, "has no expression producing it")
 
-def dumpExprs():
-    wires, gates = getInput()
-    for i in range(46):
-        dest = "z" + numToStr(i)
-        print(dest, "=", getExpression(dest, wires, gates))
-        print()
 
 ## this was when I was hoping the expressions were systematically equivalent
 ## which doesn't seem to be the case (and checking if 2 exprs are equivalent is hard :\
-#
-#def getAddExpr(a, b, cin):
-#    if cin == "0":
-#        return "(" + a + " ^ " + b + ")"
-#    else:
-#        return "(" + cin + ") ^ (" + a + " ^ " + b + ")"
-#
-#def getCarryExpr(a, b, cin):
-#    if cin == "0":
-#        return "(" + a + " & " + b + ")"
-#    else:
-#        return "(" + a + " & " + b + " | ((" + a + " ^ " + b + ") & " + cin + "))"
-#
-#
-#def getSumExprs():
-#    zexprs = []
-#    carries = ["0"]
-#    for i in range(46):
-#        sum = getAddExpr("x" + numToStr(i), "y" + numToStr(i), carries[i])
-#        carry = getCarryExpr("x" + numToStr(i), "y" + numToStr(i), carries[i])
-#        zexprs.append(sum)
-#        carries.append(carry)
-#    return zexprs
+def getAddExpr(a, b, cin):
+    if cin == "0":
+        return "(" + a + " ^ " + b + ")"
+    else:
+        return "(" + cin + ") ^ (" + a + " ^ " + b + ")"
+def getCarryExpr(a, b, cin):
+    if cin == "0":
+        return "(" + a + " & " + b + ")"
+    else:
+        return "(" + a + " & " + b + " | ((" + a + " ^ " + b + ") & " + cin + "))"
+def getSumExprs():
+    zexprs = []
+    carries = ["0"]
+    for i in range(46):
+        sum = getAddExpr("x" + numToStr(i), "y" + numToStr(i), carries[i])
+        carry = getCarryExpr("x" + numToStr(i), "y" + numToStr(i), carries[i])
+        zexprs.append(sum)
+        carries.append(carry)
+    return zexprs
+
+def dumpExprs():
+    wires, gates = getInput()
+    mine = getSumExprs()
+    for i in range(46):
+        dest = "z" + numToStr(i)
+        print(dest, "=", getExpression(dest, wires, gates))
+        #print(dest, "=", mine[i])
+        print()
+
+
+
 
 
 # evaluate a boolean expression
@@ -138,6 +140,6 @@ def detectMistake():
         exprs.append(getExpression(name, wires, gates))
     testNums(exprs, 100)
 
-detectMistake()
-#dumpExprs()
+#detectMistake()
+dumpExprs()
 
