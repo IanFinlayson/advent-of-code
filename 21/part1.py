@@ -28,7 +28,7 @@ def numericGraph():
     graph[0x3][0x6] = "^"
     graph[0x3][0xA] = "v"
     graph[0x4][0x7] = "^"
-    graph[0x4][0x5] = "<"
+    graph[0x4][0x5] = ">"
     graph[0x4][0x1] = "v"
     graph[0x5][0x4] = "<"
     graph[0x5][0x8] = "^"
@@ -47,7 +47,7 @@ def numericGraph():
     graph[0xA][0x0] = "<"
     graph[0xA][0x3] = "^"
     return graph
-   
+
 # this returns an adjacency matrix representing the directional keypad
 # the indices are: > ^ < v A
 #                  0 1 2 3 4
@@ -72,7 +72,7 @@ def directionalGraph():
     return graph
 
 # yet ANOTHER time dijkstra's is coming in handy this year
-def dijkstra(graph, source, dest):
+def dijkstra(graph, source, dest, directional, depth):
     tentative = [None for i in range(len(graph))]
     tentative[source] = 0
 
@@ -89,15 +89,34 @@ def dijkstra(graph, source, dest):
         # try to go each place
         for other in range(len(graph)):
             if graph[index][other] != None:
-                distance = tentative[index] + 1
+                # here we can't just use 1 as a cost, but the cost to get here in the directional graph!!!!
+                if depth > 0:
+                    costy, ignore = dijkstra(directional, dirToIndex("A"), dirToIndex(graph[index][other]), directional, depth - 1)
+                else:
+                    costy = 1
+                distance = tentative[index] + costy
 
                 if tentative[other] == None or distance < tentative[other]:
                     tentative[other] = distance
                     path[other] = path[index] + graph[index][other]
                     heapq.heappush(nodes, (distance, other))
 
+    # this is a TOTAL hack :(
+    #if path[dest] == "^^<<":
+    #    path[dest] = "<<^^"
+    
+    #if path[dest] == "^<<":
+    #    path[dest] = "<<^"
+    #if path[dest] == "^^^<":
+    #    path[dest] = "<^^^"
+    #if path[dest] == "^<":
+    #    path[dest] = "<^"
+    
     # return the paths in which are now a least cost path to each node
-    return path[dest]
+    if depth == 2:
+        print("To get from", source, "to", dest, "we can do", path[dest])
+
+    return tentative[dest], path[dest]
 
 def roomToIndex(key):
     if key == "A":
@@ -114,53 +133,48 @@ def dirToIndex(dir):
     d["A"] = 4
     return d[dir]
 
-def doSequence(graph, sequence, indexFunc):
-    result = ""
-    last = indexFunc("A")
-    for thing in sequence:
-        result += dijkstra(graph, last, indexFunc(thing)) + "A"
-        last = indexFunc(thing)
-    return result
-
 def part1(numeric, directional, room):
-    print(room, ": ", sep="", end="")
-
-    # TODO why not same??
-    #level1 = doSequence(numeric, room, roomToIndex)
-    #print(level1)
-    #level2 = doSequence(numeric, level1, dirToIndex)
-    #print(level2)
-    #level3 = doSequence(numeric, level2, dirToIndex)
-    #print(level3)
-
+    #print(room, ": ", sep="", end="")
+    #print(room)
 
     level1 = ""
     last = roomToIndex("A")
     for key in room:
-        level1 += dijkstra(numeric, last, roomToIndex(key)) + "A"
+        cost, path = dijkstra(numeric, last, roomToIndex(key), directional, 2)
+        level1 += path + "A"
         last = roomToIndex(key)
     #print(level1)
-        
+
     level2 = ""
     last = dirToIndex("A")
     for d in level1:
-        level2 += dijkstra(directional, last, dirToIndex(d)) + "A"
+        cost, path = dijkstra(directional, last, dirToIndex(d), directional, 1)
+        level2 += path + "A"
         last = dirToIndex(d)
     #print(level2)
 
     level3 = ""
     last = dirToIndex("A")
     for d in level2:
-        level3 += dijkstra(directional, last, dirToIndex(d)) + "A"
+        cost, path = dijkstra(directional, last, dirToIndex(d), directional, 0)
+        level3 += path + "A"
         last = dirToIndex(d)
     print(level3)
+    
+    print(len(level3))
 
-
+    return len(level3) * int(room[:-1])
 
 
 numeric = numericGraph()
 directional = directionalGraph()
+total = 0
 for room in getInput():
-    part1(numeric, directional, room)
+    total += part1(numeric, directional, room)
+print(total)
+    
+
+#part1(numeric, directional, "456A")
+#print("\nCorrect:\n456A: <v<A>>^AA<vA<A>>^AAvAA<^A>A<vA>^A<A>A<vA>^A<A>A<v<A>A>^AAvA<^A>A")
 
 
