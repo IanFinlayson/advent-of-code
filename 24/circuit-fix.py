@@ -25,6 +25,13 @@ def swapXY(gates):
         if g[1][0] == "y" and g[2][0] == "x":
             gates[i] = (g[0], g[2], g[1], g[3])
 
+# always put the G or P part on the left:
+def swapGP(gates):
+    for i in range(len(gates)):
+        g = gates[i]
+        if g[2][0] == "g" and g[2][1:].isdigit() or g[2][0] == "p" and g[2][1:].isdigit():
+            gates[i] = (g[0], g[2], g[1], g[3])
+
 def replaceWire(gates, a, b):
     for i in range(len(gates)):
         g = gates[i]
@@ -46,7 +53,18 @@ def identifySums(gates):
     for i in range(len(gates)):
         g = gates[i]
         if g[1][0] == "x" and g[2][0] == "y" and g[0] == "XOR":
-            reps.append((g[3], "s" + g[1][1:]))
+            reps.append((g[3], "p" + g[1][1:]))
+    # replace them all
+    for rep in reps:
+        replaceWire(gates, rep[0], rep[1])
+
+def identifyCarries(gates):
+    reps = []
+    # find them all first
+    for i in range(len(gates)):
+        g = gates[i]
+        if g[1][0] == "x" and g[2][0] == "y" and g[0] == "AND":
+            reps.append((g[3], "g" + g[1][1:]))
     # replace them all
     for rep in reps:
         replaceWire(gates, rep[0], rep[1])
@@ -55,9 +73,14 @@ def dump(gates):
     for gate in gates:
         print(gate[1], gate[0], gate[2], "->", gate[3])
 
+
 gates = getInput()
 swapXY(gates)
 identifySums(gates)
+identifyCarries(gates)
+swapGP(gates)
+
+gates.sort(key = lambda tup: tup[3])
 dump(gates)
 
 
