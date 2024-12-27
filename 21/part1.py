@@ -72,7 +72,7 @@ def directionalGraph():
     return graph
 
 # yet ANOTHER time dijkstra's is coming in handy this year
-def dijkstra(graph, source, dest, directional, depth):
+def dijkstra(graph, source, dest):
     tentative = [None for i in range(len(graph))]
     tentative[source] = 0
 
@@ -89,34 +89,14 @@ def dijkstra(graph, source, dest, directional, depth):
         # try to go each place
         for other in range(len(graph)):
             if graph[index][other] != None:
-                # here we can't just use 1 as a cost, but the cost to get here in the directional graph!!!!
-                if depth > 0:
-                    costy, ignore = dijkstra(directional, dirToIndex("A"), dirToIndex(graph[index][other]), directional, depth - 1)
-                else:
-                    costy = 1
-                distance = tentative[index] + costy
+                distance = tentative[index] + 1
 
                 if tentative[other] == None or distance < tentative[other]:
                     tentative[other] = distance
                     path[other] = path[index] + graph[index][other]
                     heapq.heappush(nodes, (distance, other))
 
-    # this is a TOTAL hack :(
-    #if path[dest] == "^^<<":
-    #    path[dest] = "<<^^"
-    
-    #if path[dest] == "^<<":
-    #    path[dest] = "<<^"
-    #if path[dest] == "^^^<":
-    #    path[dest] = "<^^^"
-    #if path[dest] == "^<":
-    #    path[dest] = "<^"
-    
-    # return the paths in which are now a least cost path to each node
-    if depth == 2:
-        print("To get from", source, "to", dest, "we can do", path[dest])
-
-    return tentative[dest], path[dest]
+    return path[dest]
 
 def roomToIndex(key):
     if key == "A":
@@ -133,48 +113,41 @@ def dirToIndex(dir):
     d["A"] = 4
     return d[dir]
 
+def applyDijkstra(graph, indexFunc, sequence):
+    result = ""
+    last = indexFunc("A")
+    for key in sequence:
+        path = dijkstra(graph, last, indexFunc(key))
+        result += path + "A"
+        last = indexFunc(key)
+    return result
+
+
 def part1(numeric, directional, room):
     #print(room, ": ", sep="", end="")
-    #print(room)
+    print(room)
 
-    level1 = ""
-    last = roomToIndex("A")
-    for key in room:
-        cost, path = dijkstra(numeric, last, roomToIndex(key), directional, 2)
-        level1 += path + "A"
-        last = roomToIndex(key)
-    #print(level1)
+    level1 = applyDijkstra(numeric, roomToIndex, room)
+    level2 = applyDijkstra(directional, dirToIndex, level1)
+    level3 = applyDijkstra(directional, dirToIndex, level2)
 
-    level2 = ""
-    last = dirToIndex("A")
-    for d in level1:
-        cost, path = dijkstra(directional, last, dirToIndex(d), directional, 1)
-        level2 += path + "A"
-        last = dirToIndex(d)
-    #print(level2)
-
-    level3 = ""
-    last = dirToIndex("A")
-    for d in level2:
-        cost, path = dijkstra(directional, last, dirToIndex(d), directional, 0)
-        level3 += path + "A"
-        last = dirToIndex(d)
+    print(level1)
+    print(level2)
     print(level3)
-    
     print(len(level3))
-
     return len(level3) * int(room[:-1])
 
 
 numeric = numericGraph()
 directional = directionalGraph()
-total = 0
-for room in getInput():
-    total += part1(numeric, directional, room)
-print(total)
+
+#total = 0
+#for room in getInput():
+#    total += part1(numeric, directional, room)
+#print(total)
     
 
-#part1(numeric, directional, "456A")
-#print("\nCorrect:\n456A: <v<A>>^AA<vA<A>>^AAvAA<^A>A<vA>^A<A>A<vA>^A<A>A<v<A>A>^AAvA<^A>A")
+part1(numeric, directional, "456A")
+print("\nCorrect:\n456A: <v<A>>^AA<vA<A>>^AAvAA<^A>A<vA>^A<A>A<vA>^A<A>A<v<A>A>^AAvA<^A>A")
 
 
