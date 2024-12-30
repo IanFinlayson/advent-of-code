@@ -119,7 +119,7 @@ def bestPath(pad, path, level):
         start = end
     
     # memoization storage, it was crashing so I limit the cache size a bit
-    if pad == pad2 and len(table) < 1000000:
+    if pad == pad2 and level < 18:
         table[(path, level)] = total
     return total
 
@@ -140,7 +140,7 @@ def numPart(room):
 rooms = getInput()
 part1 = 0
 for room in rooms:
-    t = bestPath(pad1, room, 22)
+    t = bestPath(pad1, room, 26)
     #print(t)
     #print(len(t))
     part1 += numPart(room) * len(t)
