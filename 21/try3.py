@@ -36,8 +36,8 @@ def find(pad, sym):
 def allPaths(pad, r0, c0, r1, c1):
     # if we are here, no path needed
     if r0 == r1 and c0 == c1:
-        return []
-    
+        return [""]
+
     # if we have only one dimension to go, just do that obvs
     if r0 == r1:
         if c1 > c0:
@@ -67,7 +67,7 @@ def allPaths(pad, r0, c0, r1, c1):
         conts = allPaths(pad, r0, c0 + colmod, r1, c1)
         for cont in conts:
             options.append(dir + cont)
-    
+
     # next vertical
     if r1 > r0:
         rowmod = 1
@@ -84,11 +84,55 @@ def allPaths(pad, r0, c0, r1, c1):
     return options
 
 
-# try it out
-start = find(pad1, "A")
-end = find(pad1, "7")
-paths = allPaths(pad1, start[0], start[1], end[0], end[1])
-print(paths)
+def bestPath(pad, path, level):
+    if level == 0:
+        return path
 
+    start = find(pad, "A")
+
+    total = ""
+    for key in path:
+        end = find(pad, key)
+        #print("All paths from", pad[start[0]][start[1]], "to", pad[end[0]][end[1]], ":")
+        posses = allPaths(pad1, start[0], start[1], end[0], end[1])
+        #print(posses)
+
+        #print("From", start, "to", end)
+        best = None
+        for poss in posses:
+            # find the best one in the pad 2 at one less level
+            option = bestPath(pad2, poss + "A", level - 1)
+            if best == None or len(option) < len(best):
+                best = option
+        if best == None:
+            print("rutro, could find no option for", key, "in", path)
+            print(posses)
+        total += best
+
+        start = end
+    return total
+
+
+def numPart(room):
+    firstNum = False
+    number = ""
+    for dig in room:
+        if dig == "0" and not firstNum:
+            pass
+        elif dig in "0123456789":
+            firstNum = True
+            number = number + dig
+    return int(number)
+
+
+# do it for all input rooms
+rooms = getInput()
+part1 = 0
+for room in rooms:
+    t = bestPath(pad1, room, 3)
+    print(t)
+    print(len(t))
+    part1 += numPart(room) * len(t)
+print(part1)
 
 
