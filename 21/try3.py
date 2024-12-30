@@ -84,7 +84,14 @@ def allPaths(pad, r0, c0, r1, c1):
     return options
 
 
+# now we memoize friends
+table = dict()
+
 def bestPath(pad, path, level):
+    # memoization lookup
+    if pad == pad2 and ((path, level) in table):
+        return table[(path, level)]
+
     if level == 0:
         return path
 
@@ -110,6 +117,10 @@ def bestPath(pad, path, level):
         total += best
 
         start = end
+    
+    # memoization storage, it was crashing so I limit the cache size a bit
+    if pad == pad2 and len(table) < 1000000:
+        table[(path, level)] = total
     return total
 
 
@@ -129,9 +140,9 @@ def numPart(room):
 rooms = getInput()
 part1 = 0
 for room in rooms:
-    t = bestPath(pad1, room, 3)
-    print(t)
-    print(len(t))
+    t = bestPath(pad1, room, 22)
+    #print(t)
+    #print(len(t))
     part1 += numPart(room) * len(t)
 print(part1)
 
