@@ -33,6 +33,7 @@ def swapGP(gates):
             gates[i] = (g[0], g[2], g[1], g[3])
 
 def replaceWire(gates, a, b):
+    print("Renaming", a, "to", b)
     for i in range(len(gates)):
         g = gates[i]
         new = [g[0], g[1], g[2], g[3]]
@@ -69,10 +70,54 @@ def identifyCarries(gates):
     for rep in reps:
         replaceWire(gates, rep[0], rep[1])
 
+def identifyTemps(gates):
+    reps = []
+    for i in range(len(gates)):
+        g = gates[i]
+        if g[1][0] == "p" and g[0] == "AND":
+            reps.append((g[3], "t" + g[1][1:]))
+    # replace them all
+    for rep in reps:
+        replaceWire(gates, rep[0], rep[1])
+
+def identifyChains(gates):
+    reps = []
+    for i in range(len(gates)):
+        g = gates[i]
+        if g[1][0] == "g" and g[0] == "OR":
+            reps.append((g[3], "c" + g[1][1:]))
+    # replace them all
+    for rep in reps:
+        replaceWire(gates, rep[0], rep[1])
+
 def dump(gates):
+    last = -1
     for gate in gates:
+        if gate[3][1:].isdigit():
+            if last == -1 or last != int(gate[3][1:]):
+                print()
+                last = int(gate[3][1:])
         print(gate[1], gate[0], gate[2], "->", gate[3])
 
+def score(gate):
+    op, in1, in2, out = gate
+    
+    # put all the non-fixed ones last
+    if not out[1:].isdigit():
+        return 0
+
+    s = int(out[1:]) * 1000
+    if out[0] == "p":
+        s += 0
+    elif out[0] == "g":
+        s += 1
+    elif out[0] == "t":
+        s += 2
+    elif out[0] == "c":
+        s += 3
+    elif out[0] == "z":
+        s ++ 4
+    return s
 
 gates = getInput()
 swapXY(gates)
@@ -80,7 +125,10 @@ identifySums(gates)
 identifyCarries(gates)
 swapGP(gates)
 
-gates.sort(key = lambda tup: tup[3])
+identifyTemps(gates)
+identifyChains(gates)
+
+gates.sort(key = score)
 dump(gates)
 
 

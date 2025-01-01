@@ -128,18 +128,22 @@ def testNums(exprs, tests):
         if mistake != None:
             if first == None or mistake < first:
                 first = mistake
-    print("First error found in bit position", first)
+    #print("First error found in bit position", first)
+    return first
 
 # this will detect mistakes in the adding circuit at a bit position
-def detectMistake():
-    wires, gates = getInput()
-
+def detectMistake(wires, gates):
     exprs = []
     for i in range(46):
         name = "z" + numToStr(i)
         exprs.append(getExpression(name, wires, gates))
-    testNums(exprs, 100)
+    return testNums(exprs, 100)
 
-#detectMistake()
-dumpExprs()
+
+
+
+# load the stuff
+wires, gates = getInput()
+mistake = detectMistake(wires, gates)
+print("First mistake in bit", mistake)
 
