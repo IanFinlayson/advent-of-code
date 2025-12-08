@@ -1,6 +1,0 @@
-After making the ten shortest connections, there are 11 circuits: one circuit
-which contains 5 junction boxes, one circuit which contains 4 junction boxes,
-two circuits which contain 2 junction boxes each, and seven circuits
-which each contain a single junction box. Multiplying together the sizes
-of the three largest circuits (5, 4, and one of the circuits of size 2)
-produces 40.

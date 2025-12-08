@@ -1,4 +1,5 @@
 import math
+import heapq
 
 # good ol' union-find, an under-appreciated data structure
 def emptyUF(size):
@@ -60,23 +61,21 @@ def getBoxes():
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2 + (p2[2] - p1[2])**2)
 
-# returns a table [from][to] of distances
-# it is "jagged" where from < to
+# returns a min heap of the distances
+# the array is (dist, (p1, p2))
 def closestPoints(boxes):
-    table = []
+    minheap = []
 
     for i in range(len(boxes)):
-        row = []
         for j in range(i + 1, len(boxes)):
-            row.append(distance(boxes[i], boxes[j]))
-        table.append(row)
-    return table
+            heapq.heappush(minheap, (distance(boxes[i], boxes[j]), i, j))
+    return minheap
 
 def main():
     # read the points and pre-compute a distances table
     boxes = getBoxes()
     print("Got the boxes")
-    dist_table = closestPoints(boxes)
+    minheap = closestPoints(boxes)
     print("Got the distance table")
 
     # we make a union/find of points to keep track of the circuits
@@ -85,23 +84,13 @@ def main():
     print("Built the starter union/find")
 
     for k in range(1000):
-        # go through removing smallest point, and unioning them
-        mini = 0
-        minj = 1
-        mindist = math.inf
-        for i in range(len(boxes)):
-            for j in range(i + 1, len(boxes)):
-                if dist_table[i][j - (i+1)] != None and dist_table[i][j - (i+1)] < mindist:
-                    mini = i
-                    minj = j
-                    mindist = dist_table[i][j - (i+1)]
+        (mindist, mini, minj) = heapq.heappop(minheap)
 
         # now we want to connect up mini and minj, and remove this distance...
         if find(circuits, mini) != find(circuits, minj):
             union(circuits, mini, minj)
             inds -= 1
 
-        dist_table[mini][minj - (mini+1)] = None
         print("Did link", k+1, "of 1000")
     
     # do the actual thing
