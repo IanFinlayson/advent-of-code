@@ -32,21 +32,25 @@ def getGraph():
 
     return nodes, edges
         
-# return all paths from given node to ending node
-def waysToReachOut(nodes, edges, n, memo, dest):
+# return NUMBER of paths from given node to ending node
+# we also have an AVOID node...if we hit that one we return 0
+# (this way we don't count (svr->dac->fft) as a path from svr to fft
+def waysToReachOut(nodes, edges, n, memo, dest, avoid):
     if memo[n] != None:
         return memo[n]
 
     # base case: we ARE at end
     if nodes[n] == dest:
-        return [[n]]
+        return 1
+
+    # case case: we hit the avoid node
+    if nodes[n] == avoid:
+        return 0
 
     # recursive case: go through out edges
-    ways = []
+    ways = 0
     for e in edges[n]:
-         pathsFromHere = waysToReachOut(nodes, edges, e, memo, dest)
-         for p in pathsFromHere:
-             ways.append([n] + p)
+         ways += waysToReachOut(nodes, edges, e, memo, dest, avoid)
     memo[n] = ways
     return ways
 
@@ -54,11 +58,20 @@ def waysToReachOut(nodes, edges, n, memo, dest):
 def main():
     nodes, edges = getGraph()
 
-    # find ways from svr to dac, and from svr to fft
-    toDAC = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "dac")
-    print("There are", len(toDAC), "ways to DAC")
-    toFFT = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "fft")
-    print("There are", len(toFFT), "ways to FFT")
+    # find ways from svr to dac/fft and from dac/fft to out
+    a = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "dac", "fft")
+    b = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "fft", "dac")
+    c = waysToReachOut(nodes, edges, lookup(nodes, "dac"), [None for i in range(len(nodes))], "out", "fft")
+    d = waysToReachOut(nodes, edges, lookup(nodes, "fft"), [None for i in range(len(nodes))], "out", "dac")
+
+    # ALSO dac-fft and fft-dac
+    e = waysToReachOut(nodes, edges, lookup(nodes, "dac"), [None for i in range(len(nodes))], "fft", "svr")
+    f = waysToReachOut(nodes, edges, lookup(nodes, "fft"), [None for i in range(len(nodes))], "dac", "svr")
+
+    # find total paths possible
+    print(a,b,c,d,e,f)
+    print(a*f*d + c*e*b)
+
 
 
 main()
