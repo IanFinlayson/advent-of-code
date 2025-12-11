@@ -33,46 +33,32 @@ def getGraph():
     return nodes, edges
         
 # return NUMBER of paths from given node to ending node
-# we also have an AVOID node...if we hit that one we return 0
-# (this way we don't count (svr->dac->fft) as a path from svr to fft
-def waysToReachOut(nodes, edges, n, memo, dest, avoid):
-    if memo[n] != None:
-        return memo[n]
+def waysToReachOut(nodes, edges, n, memo, dest, seenDAC, seenFFT):
+    # check memo array
+    if str((n, seenDAC, seenFFT)) in memo:
+        return memo[str((n, seenDAC, seenFFT))]
 
     # base case: we ARE at end
     if nodes[n] == dest:
-        return 1
+        return 1 if (seenDAC and seenFFT) else 0
 
-    # case case: we hit the avoid node
-    if nodes[n] == avoid:
-        return 0
+    # check if we are a special one
+    if nodes[n] == "dac":
+        seenDAC = True
+    if nodes[n] == "fft":
+        seenFFT = True
 
     # recursive case: go through out edges
     ways = 0
     for e in edges[n]:
-         ways += waysToReachOut(nodes, edges, e, memo, dest, avoid)
-    memo[n] = ways
+        ways += waysToReachOut(nodes, edges, e, memo, dest, seenDAC, seenFFT)
+    memo[str((n, seenFFT, seenDAC))] = ways
     return ways
-
 
 def main():
     nodes, edges = getGraph()
-
-    # find ways from svr to dac/fft and from dac/fft to out
-    a = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "dac", "fft")
-    b = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "fft", "dac")
-    c = waysToReachOut(nodes, edges, lookup(nodes, "dac"), [None for i in range(len(nodes))], "out", "fft")
-    d = waysToReachOut(nodes, edges, lookup(nodes, "fft"), [None for i in range(len(nodes))], "out", "dac")
-
-    # ALSO dac-fft and fft-dac
-    e = waysToReachOut(nodes, edges, lookup(nodes, "dac"), [None for i in range(len(nodes))], "fft", "svr")
-    f = waysToReachOut(nodes, edges, lookup(nodes, "fft"), [None for i in range(len(nodes))], "dac", "svr")
-
-    # find total paths possible
-    print(a,b,c,d,e,f)
-    print(a*f*d + c*e*b)
-
-
+    ways = waysToReachOut(nodes, edges, lookup(nodes, "svr"), {}, "out", False, False)
+    print(ways)
 
 main()
 
