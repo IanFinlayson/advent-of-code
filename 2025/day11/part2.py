@@ -27,34 +27,39 @@ def getGraph():
         for link in links:
             thisun.append(lookup(nodes, link))
         edges.append(thisun)
+    # out has none
+    edges.append([])
 
     return nodes, edges
         
-
 # return all paths from given node to ending node
-def waysToReachOut(nodes, edges, n):
-    # base case: we ARE out
-    if nodes[n] == "out":
+def waysToReachOut(nodes, edges, n, memo, dest):
+    if memo[n] != None:
+        return memo[n]
+
+    # base case: we ARE at end
+    if nodes[n] == dest:
         return [[n]]
 
     # recursive case: go through out edges
     ways = []
     for e in edges[n]:
-         pathsFromHere = waysToReachOut(nodes, edges, e)
+         pathsFromHere = waysToReachOut(nodes, edges, e, memo, dest)
          for p in pathsFromHere:
              ways.append([n] + p)
+    memo[n] = ways
     return ways
-
 
 
 def main():
     nodes, edges = getGraph()
-    ws = waysToReachOut(nodes, edges, lookup(nodes, "svr"))
-    count = 0
-    for way in ws:
-        if lookup(nodes, "dac") in way and lookup(nodes, "fft") in way:
-            count += 1
-    print(count)
+
+    # find ways from svr to dac, and from svr to fft
+    toDAC = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "dac")
+    print("There are", len(toDAC), "ways to DAC")
+    toFFT = waysToReachOut(nodes, edges, lookup(nodes, "svr"), [None for i in range(len(nodes))], "fft")
+    print("There are", len(toFFT), "ways to FFT")
+
 
 main()
 
